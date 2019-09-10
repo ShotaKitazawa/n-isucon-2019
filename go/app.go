@@ -1737,6 +1737,10 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	if f, err := os.Stat(fmt.Sprintf("/home/isucon/app/public/users/%s", username)); os.IsNotExist(err) || !f.IsDir() {
 
+		if err := os.Mkdir(fmt.Sprintf("/home/isucon/app/public/users/%s", username), 0777); err != nil {
+			panic(err)
+		}
+
 		w_file, err := os.Create(fmt.Sprintf("/home/isucon/app/public/users/%s/icon", username))
 		if err != nil {
 			panic(err)
