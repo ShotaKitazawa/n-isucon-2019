@@ -582,19 +582,22 @@ func itemsGet(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	query := "SELECT id from items"
-	rows, err := db.Query(query)
+	query := "SELECT count(*) from items"
+	// rows, err := db.Query(query)
+	items.Count = 0
+	row := db.QueryRow(query)
+	err = row.Scan(&items.Count)
 	if err != nil {
 		utils.SetStatus(w, 500)
 		panic("Unable to get the query results.")
 		return
 	}
 
-	items.Count = 0
-	for rows.Next() {
-		_ = rows.Scan()
-		items.Count++
-	}
+	// items.Count = 0
+	// for rows.Next() {
+	// 	_ = rows.Scan()
+	// 	items.Count++
+	// }
 
 	result, err := json.Marshal(items)
 
