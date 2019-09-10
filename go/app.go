@@ -1663,6 +1663,7 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
+	data, _ := ioutil.ReadAll(file)
 
 	session, err := store.Get(r, "session")
 	if err != nil {
@@ -1686,6 +1687,7 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		panic("Unable to connect the DB.")
 	}
 	defer db.Close()
+
 	// get user ID
 	user, err := SelectUserByUsername(db, username)
 	if err != nil {
@@ -1722,7 +1724,6 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		utils.SetStatus(w, 409)
 		return
 	}
-
 	img, err := ioutil.ReadAll(file)
 	encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
 	log.Printf("base64:%s\n ", encodedimg)
@@ -1734,6 +1735,15 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		panic("Failed to insert to items table.")
 		return
 	}
+
+	os.Mkdir(fmt.Sprintf("/home/isucon/app/public/users/%s", username), 0777)
+
+	w_file, err := os.Create(fmt.Sprintf("/home/isucon/app/public/users/%s/icon", username))
+	if err != nil {
+		panic(err)
+	}
+	w_file.Write(data)
+
 	utils.SetStatus(w, 201)
 	return
 }
