@@ -1778,7 +1778,7 @@ func main() {
 	goji.Post("/users", usersPost)
 	goji.Patch("/users/:username", usersPatch)
 	goji.Delete("/users/:username", usersDelete)
-	goji.Get("/users/:username/icon", iconGet)
+	//goji.Get("/users/:username/icon", iconGet)
 	goji.Post("/users/:username/icon", iconPost)
 	goji.Get("/items", itemsGet)
 	goji.Get("/items/:item_id", itemsGetByID)
