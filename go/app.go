@@ -515,30 +515,44 @@ func itemsGet(c web.C, w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("limit: %v\n", ItemLimit)
 
 	if sortLike == false {
+		result := Item{}
+		user := User{}
 
-		query := "SELECT id, title, user_id, created_at from items ORDER BY created_at DESC LIMIT ? OFFSET ?"
-		rows, err := db.Query(query, ItemLimit, offset)
+		query := "SELECT i.id, i.title, i.created_at u.id, u.username, u.password_hash, u.salt, u.created_at FROM items AS i JOIN users AS u ON i.user_id = u.id ORDER BY created_at DESC LIMIT ? OFFSET ?"
+		row := db.QueryRow(query)
+		err = row.Scan(&result.ID, &result.Title, &result.CreatedAt, &user.ID, &user.Username, &user.passwordHash, &user.salt, &user.CreatedAt)
 		if err != nil {
 			utils.SetStatus(w, 500)
 			panic("Unable to get the query results.")
 			return
 		}
+		result.Username = user.Username
+		items.Items = append(items.Items, result)
+		/*
+			query := "SELECT id, title, user_id, created_at from items ORDER BY created_at DESC LIMIT ? OFFSET ?"
+			rows, err := db.Query(query, ItemLimit, offset)
+			if err != nil {
+				utils.SetStatus(w, 500)
+				panic("Unable to get the query results.")
+				return
+			}
 
-		for rows.Next() {
-			var userID int
-			result := Item{}
-			err := rows.Scan(&result.ID, &result.Title, &userID, &result.CreatedAt)
-			if err != nil {
-				panic(err)
+			for rows.Next() {
+				var userID int
+				result := Item{}
+				err := rows.Scan(&result.ID, &result.Title, &userID, &result.CreatedAt)
+				if err != nil {
+					panic(err)
+				}
+				user, err := SelectUserByUserID(db, userID)
+				if err != nil {
+					panic("Unexpected err.")
+				}
+				result.Username = user.Username
+				fmt.Println("res: %v", result)
+				items.Items = append(items.Items, result)
 			}
-			user, err := SelectUserByUserID(db, userID)
-			if err != nil {
-				panic("Unexpected err.")
-			}
-			result.Username = user.Username
-			fmt.Println("res: %v", result)
-			items.Items = append(items.Items, result)
-		}
+		*/
 
 	} else {
 
@@ -595,8 +609,8 @@ func itemsGet(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	// items.Count = 0
 	// for rows.Next() {
-	// 	_ = rows.Scan()
-	// 	items.Count++
+	//	_ = rows.Scan()
+	//	items.Count++
 	// }
 
 	result, err := json.Marshal(items)
