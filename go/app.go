@@ -1,7 +1,7 @@
 package main
 
 import (
-	"./utils"
+	"app/utils"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
