@@ -1703,7 +1703,7 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	userID := user.ID
-	base64txt, err := SelectIconByUserID(db, userID)
+	_, err = SelectIconByUserID(db, userID)
 	if err != nil {
 		errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
 		switch errCode {
