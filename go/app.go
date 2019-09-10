@@ -1685,72 +1685,61 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 
-	/*
-		// get user ID
-		user, err := SelectUserByUsername(db, username)
-		if err != nil {
-			errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
-			switch errCode {
-			case DBNOTFOUNDERR:
-				utils.SetStatus(w, 500)
-			case DBQUERYERR:
-				panic("Unable to get the query results.")
-			case DBSCANERR:
-				panic("Unable to scan from the result.")
-			default:
-				panic(err)
-			}
-		}
-		userID := user.ID
-		base64txt, err := SelectIconByUserID(db, userID)
-		if err != nil {
-			errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
-			switch errCode {
-			case DBNOTFOUNDERR:
-				// There is no icon.
-				break
-			case DBQUERYERR:
-				panic("Unable to get the query results.")
-			case DBSCANERR:
-				panic("Unable to scan from the result.")
-			default:
-				panic(err)
-			}
-		} else {
-			log.Println("base64txt:", base64txt)
-			// Icon exists.
-			utils.SetStatus(w, 409)
-			return
-		}
-		img, err := ioutil.ReadAll(file)
-		encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
-		log.Printf("base64:%s\n ", encodedimg)
-
-		query := "INSERT INTO icon (user_id, icon) VALUES ((?), (?));"
-		_, err = db.Exec(query, userID, encodedimg)
-		if err != nil {
+	// get user ID
+	user, err := SelectUserByUsername(db, username)
+	if err != nil {
+		errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
+		switch errCode {
+		case DBNOTFOUNDERR:
 			utils.SetStatus(w, 500)
-			panic("Failed to insert to items table.")
-			return
-		}
-	*/
-
-	if f, err := os.Stat(fmt.Sprintf("/home/isucon/app/public/users/%s", username)); os.IsNotExist(err) || !f.IsDir() {
-
-		if err := os.Mkdir(fmt.Sprintf("/home/isucon/app/public/users/%s", username), 0777); err != nil {
+		case DBQUERYERR:
+			panic("Unable to get the query results.")
+		case DBSCANERR:
+			panic("Unable to scan from the result.")
+		default:
 			panic(err)
 		}
-
-		w_file, err := os.Create(fmt.Sprintf("/home/isucon/app/public/users/%s/icon", username))
-		if err != nil {
+	}
+	userID := user.ID
+	base64txt, err := SelectIconByUserID(db, userID)
+	if err != nil {
+		errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
+		switch errCode {
+		case DBNOTFOUNDERR:
+			// There is no icon.
+			break
+		case DBQUERYERR:
+			panic("Unable to get the query results.")
+		case DBSCANERR:
+			panic("Unable to scan from the result.")
+		default:
 			panic(err)
 		}
-		w_file.Write(data)
 	} else {
+		log.Println("base64txt:", base64txt)
 		// Icon exists.
 		utils.SetStatus(w, 409)
 		return
 	}
+	img, err := ioutil.ReadAll(file)
+	encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
+	log.Printf("base64:%s\n ", encodedimg)
+
+	query := "INSERT INTO icon (user_id, icon) VALUES ((?), (?));"
+	_, err = db.Exec(query, userID, encodedimg)
+	if err != nil {
+		utils.SetStatus(w, 500)
+		panic("Failed to insert to items table.")
+		return
+	}
+
+	os.Mkdir(fmt.Sprintf("/home/isucon/app/public/users/%s", username), 0777)
+
+	w_file, err := os.Create(fmt.Sprintf("/home/isucon/app/public/users/%s/icon", username))
+	if err != nil {
+		panic(err)
+	}
+	w_file.Write(data)
 
 	utils.SetStatus(w, 201)
 	return
@@ -1778,7 +1767,7 @@ func main() {
 	goji.Post("/users", usersPost)
 	goji.Patch("/users/:username", usersPatch)
 	goji.Delete("/users/:username", usersDelete)
-	//goji.Get("/users/:username/icon", iconGet)
+	goji.Get("/users/:username/icon", iconGet)
 	goji.Post("/users/:username/icon", iconPost)
 	goji.Get("/items", itemsGet)
 	goji.Get("/items/:item_id", itemsGetByID)
