@@ -586,7 +586,7 @@ func itemsGet(c web.C, w http.ResponseWriter, r *http.Request) {
 	// rows, err := db.Query(query)
 	items.Count = 0
 	row := db.QueryRow(query)
-	row.Scan(&items.Count)
+	err = row.Scan(&items.Count)
 	if err != nil {
 		utils.SetStatus(w, 500)
 		panic("Unable to get the query results.")
