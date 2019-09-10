@@ -1625,7 +1625,7 @@ func iconGet(c web.C, w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "image/png")
 
 	if iconExists {
-		log.Println("base64txt:", base64txt)
+		//log.Println("base64txt:", base64txt)
 		decodedimg, err := base64.StdEncoding.DecodeString(base64txt)
 		if err != nil {
 			panic("Decode failed.")
