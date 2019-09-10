@@ -595,8 +595,8 @@ func itemsGet(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	// items.Count = 0
 	// for rows.Next() {
-	// 	_ = rows.Scan()
-	// 	items.Count++
+	//	_ = rows.Scan()
+	//	items.Count++
 	// }
 
 	result, err := json.Marshal(items)
@@ -1260,12 +1260,12 @@ func commentsDelete(c web.C, w http.ResponseWriter, r *http.Request) {
 	// search target column
 	deleted := false
 	for _, x := range comments.Comments {
-		log.Println("comments:", x)
+		//log.Println("comments:", x)
 		if x.CommentID != commentID {
 			continue
 		}
-		log.Println("x.userID", x.userID)
-		log.Println("userID", userID)
+		//log.Println("x.userID", x.userID)
+		//log.Println("userID", userID)
 		if x.userID != userID {
 			utils.SetStatus(w, 403)
 			return
@@ -1719,14 +1719,14 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	} else {
-		log.Println("base64txt:", base64txt)
+		//log.Println("base64txt:", base64txt)
 		// Icon exists.
 		utils.SetStatus(w, 409)
 		return
 	}
 	img, err := ioutil.ReadAll(file)
 	encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
-	log.Printf("base64:%s\n ", encodedimg)
+	//log.Printf("base64:%s\n ", encodedimg)
 
 	query := "INSERT INTO icon (user_id, icon) VALUES ((?), (?));"
 	_, err = db.Exec(query, userID, encodedimg)
