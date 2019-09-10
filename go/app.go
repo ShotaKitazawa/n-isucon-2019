@@ -7,14 +7,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web"
 	"io/ioutil"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -23,6 +19,12 @@ import (
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
+	"github.com/zenazn/goji"
+	"github.com/zenazn/goji/web"
 )
 
 var (
@@ -1734,6 +1736,8 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	go http.ListenAndServe(":3000", nil)
+
 	store = sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
 	users = make(map[string]string)
 
