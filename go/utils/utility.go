@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -65,22 +64,17 @@ func GetPasswordHash(salt string, password string) string {
 	result := password + salt
 
 	for i := 0; i < 1000; i++ {
-		out, err := exec.Command("sh", "-c", "echo -n '"+result+"' | openssl sha256").Output()
-		if err != nil {
-			panic("Failed to generate the hash.")
-		}
+		/*
+			out, err := exec.Command("sh", "-c", "echo -n '"+result+"' | openssl sha256").Output()
+			if err != nil {
+				panic("Failed to generate the hash.")
+			}
 
-		outputRaw := string(out)
+			outputRaw := string(out)
+		*/
+		outputRaw := fmt.Sprintf("%x", sha256.Sum256([]byte(result)))
 		output := strings.Split(outputRaw, " ")
-		result_fork := strings.TrimRight(output[1], "\n")
-
-		result_lib := fmt.Sprintf("%x", sha256.Sum256([]byte(result)))
-		if result_fork != result_lib {
-			fmt.Println("hashing miss match")
-			fmt.Println("result_fork: ", result_fork)
-			fmt.Println("result_lib: ", result_lib)
-		}
-
+		result = strings.TrimRight(output[1], "\n")
 	}
 	return result
 }
