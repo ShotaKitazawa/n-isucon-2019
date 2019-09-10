@@ -1660,6 +1660,7 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
+	data, _ := ioutil.ReadAll(file)
 
 	session, err := store.Get(r, "session")
 	if err != nil {
@@ -1683,54 +1684,70 @@ func iconPost(c web.C, w http.ResponseWriter, r *http.Request) {
 		panic("Unable to connect the DB.")
 	}
 	defer db.Close()
-	// get user ID
-	user, err := SelectUserByUsername(db, username)
-	if err != nil {
-		errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
-		switch errCode {
-		case DBNOTFOUNDERR:
+
+	/*
+		// get user ID
+		user, err := SelectUserByUsername(db, username)
+		if err != nil {
+			errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
+			switch errCode {
+			case DBNOTFOUNDERR:
+				utils.SetStatus(w, 500)
+			case DBQUERYERR:
+				panic("Unable to get the query results.")
+			case DBSCANERR:
+				panic("Unable to scan from the result.")
+			default:
+				panic(err)
+			}
+		}
+		userID := user.ID
+		base64txt, err := SelectIconByUserID(db, userID)
+		if err != nil {
+			errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
+			switch errCode {
+			case DBNOTFOUNDERR:
+				// There is no icon.
+				break
+			case DBQUERYERR:
+				panic("Unable to get the query results.")
+			case DBSCANERR:
+				panic("Unable to scan from the result.")
+			default:
+				panic(err)
+			}
+		} else {
+			log.Println("base64txt:", base64txt)
+			// Icon exists.
+			utils.SetStatus(w, 409)
+			return
+		}
+		img, err := ioutil.ReadAll(file)
+		encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
+		log.Printf("base64:%s\n ", encodedimg)
+
+		query := "INSERT INTO icon (user_id, icon) VALUES ((?), (?));"
+		_, err = db.Exec(query, userID, encodedimg)
+		if err != nil {
 			utils.SetStatus(w, 500)
-		case DBQUERYERR:
-			panic("Unable to get the query results.")
-		case DBSCANERR:
-			panic("Unable to scan from the result.")
-		default:
+			panic("Failed to insert to items table.")
+			return
+		}
+	*/
+
+	if f, err := os.Stat(fmt.Sprintf("/home/isucon/app/public/users/%s", username)); os.IsNotExist(err) || !f.IsDir() {
+
+		w_file, err := os.Create(fmt.Sprintf("/home/isucon/app/public/users/%s/icon", username))
+		if err != nil {
 			panic(err)
 		}
-	}
-	userID := user.ID
-	base64txt, err := SelectIconByUserID(db, userID)
-	if err != nil {
-		errCode, _ := strconv.Atoi(fmt.Sprintf("%s", err))
-		switch errCode {
-		case DBNOTFOUNDERR:
-			// There is no icon.
-			break
-		case DBQUERYERR:
-			panic("Unable to get the query results.")
-		case DBSCANERR:
-			panic("Unable to scan from the result.")
-		default:
-			panic(err)
-		}
+		w_file.Write(data)
 	} else {
-		log.Println("base64txt:", base64txt)
 		// Icon exists.
 		utils.SetStatus(w, 409)
 		return
 	}
 
-	img, err := ioutil.ReadAll(file)
-	encodedimg := base64.StdEncoding.EncodeToString([]byte(img))
-	log.Printf("base64:%s\n ", encodedimg)
-
-	query := "INSERT INTO icon (user_id, icon) VALUES ((?), (?));"
-	_, err = db.Exec(query, userID, encodedimg)
-	if err != nil {
-		utils.SetStatus(w, 500)
-		panic("Failed to insert to items table.")
-		return
-	}
 	utils.SetStatus(w, 201)
 	return
 }
